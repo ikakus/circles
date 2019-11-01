@@ -12,6 +12,7 @@ open class CirclesView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
     val lightRed = Paint()
+    val lightRed2 = Paint()
 
     val paintPen = Paint()
 
@@ -22,14 +23,22 @@ open class CirclesView @JvmOverloads constructor(
     val gradient =
         SweepGradient((width / 2).toFloat(), (measuredHeight / 2).toFloat(), colors, positions)
 
-    var point = Point(width / 2, height / 2)
-    var point2 = Point(width / 2, height / 2)
+    lateinit var point: Point
+    lateinit var point2: Point
+    lateinit var rectF2: RectF
+    lateinit var rectF: RectF
+
 
     val color = Color.DKGRAY
+    val color2 = Color.DKGRAY
 
     init {
         lightRed.isAntiAlias = true
         lightRed.color = color
+
+        lightRed2.isAntiAlias = true
+        lightRed2.color = color2
+
         paintPen.strokeWidth = 200f
         paintPen.isAntiAlias = true
         paintPen.color = color
@@ -40,12 +49,14 @@ open class CirclesView @JvmOverloads constructor(
         point = Point(width / 2, height / 2)
         point2 = Point(width / 2, height / 2)
 
+
+
     }
 
     override fun onDraw(canvas: Canvas) {
 
-        val rectF = getRectForCircle(point, 100)
-        val rectF2 = getRectForCircle(point2, 200)
+        rectF2 = getRectForCircle(point2, 200)
+        rectF = getRectForCircle(point, 100)
 //        canvas.drawLine(
 //            point.x.toFloat(),
 //            point.y.toFloat(),
@@ -54,22 +65,35 @@ open class CirclesView @JvmOverloads constructor(
 //            paintPen
 //        )
         canvas.drawArc(rectF, 0f, 360f, true, lightRed)
-        canvas.drawArc(rectF2, 0f, 360f, true, lightRed)
+        canvas.drawArc(rectF2, 0f, 360f, true, lightRed2)
     }
+
+    var drag = false
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
 
         when {
             event.action == MotionEvent.ACTION_DOWN -> {
-                point = Point((event.x).toInt(), (event.y).toInt())
+                val r = getRectForCircle(point2, 100)
+                if (r.contains(event.x, event.y)) {
+                    drag = true
+                    point = Point((event.x).toInt(), (event.y).toInt())
+                    point2
+                    lightRed2.color = Color.RED
+                }
 
             }
             event.action == MotionEvent.ACTION_MOVE -> {
-                point = Point((event.x).toInt(), (event.y).toInt())
+                if (drag) {
+                    point = Point((event.x).toInt(), (event.y).toInt())
+                }
 
             }
             event.action == MotionEvent.ACTION_UP -> {
                 ret(point)
+                drag = false
+                lightRed2.color = Color.DKGRAY
+
             }
         }
         invalidate()
@@ -78,12 +102,12 @@ open class CirclesView @JvmOverloads constructor(
 
     fun ret(point: Point) {
 
-        val durationMillis = 500L
+        val durationMillis = 200L
 
         val factor = 1f
 
         val fromY = point.y
-        val toY = height /2
+        val toY = height / 2
         ValueAnimator.ofInt(fromY, toY).apply {
             duration = durationMillis
             start()
@@ -95,7 +119,7 @@ open class CirclesView @JvmOverloads constructor(
         }
 
         val fromX = point.x
-        val toX = width /2
+        val toX = width / 2
         ValueAnimator.ofInt(fromX, toX).apply {
             duration = durationMillis
             start()
@@ -108,7 +132,6 @@ open class CirclesView @JvmOverloads constructor(
         }
     }
 }
-
 
 
 fun getRectForCircle(point: Point, radius: Int): RectF {
