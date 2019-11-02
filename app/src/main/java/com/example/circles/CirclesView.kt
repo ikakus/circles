@@ -6,7 +6,7 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import android.view.animation.AccelerateInterpolator
+import android.view.animation.AccelerateDecelerateInterpolator
 
 open class CirclesView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
@@ -64,8 +64,8 @@ open class CirclesView @JvmOverloads constructor(
 //            point2.y.toFloat(),
 //            paintPen
 //        )
-        canvas.drawArc(rectF, 0f, 360f, true, lightRed)
         canvas.drawArc(rectF2, 0f, 360f, true, lightRed2)
+        canvas.drawArc(rectF, 0f, 360f, true, lightRed)
     }
 
     var drag = false
@@ -79,7 +79,7 @@ open class CirclesView @JvmOverloads constructor(
                     drag = true
                     point = Point((event.x).toInt(), (event.y).toInt())
                     point2
-                    lightRed2.color = Color.RED
+//                    lightRed2.color = Color.RED
                 }
 
             }
@@ -100,14 +100,19 @@ open class CirclesView @JvmOverloads constructor(
         return true
     }
 
+    fun animateRadiusChange(rectf: RectF){
+
+    }
+
     fun ret(point: Point) {
 
-        val durationMillis = 200L
+        val durationMillis = 300L
 
         val factor = 1f
 
         val fromY = point.y
         val toY = height / 2
+        val interp = AccelerateDecelerateInterpolator()
         ValueAnimator.ofInt(fromY, toY).apply {
             duration = durationMillis
             start()
@@ -115,7 +120,7 @@ open class CirclesView @JvmOverloads constructor(
                 point.y = updatedAnimation.animatedValue as Int
                 invalidate()
             }
-            interpolator = AccelerateInterpolator(factor)
+            interpolator = interp
         }
 
         val fromX = point.x
@@ -127,7 +132,7 @@ open class CirclesView @JvmOverloads constructor(
                 point.x = updatedAnimation.animatedValue as Int
                 invalidate()
             }
-            interpolator = AccelerateInterpolator(factor)
+            interpolator = interp
 
         }
     }
