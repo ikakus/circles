@@ -14,19 +14,14 @@ class CurveView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : View(context, attrs, defStyleAttr) {
 
-//    private val borderPath = Path()
-//    private val points = mutableListOf<PointF>()
-//    private val conPoint1 = mutableListOf<PointF>()
-//    private val conPoint2 = mutableListOf<PointF>()
-
     private val path = Path()
-
     private val borderPathPaint = Paint()
 
-    val an = ValueAnimator.ofFloat(0f, 360f)
     val an2 = ValueAnimator.ofFloat(0f, 360f)
 
     var h = 100f
+
+    var angle = 0f
 
     init {
         borderPathPaint.apply {
@@ -36,89 +31,65 @@ class CurveView @JvmOverloads constructor(
             color = Color.RED
         }
 
-        an.duration = 2000
-
-        an.interpolator = LinearInterpolator()
-        an.repeatCount = INFINITE
-        an.addUpdateListener {
-            val value = it.animatedValue as Float
-
-            path.reset()
-            path.cubicTo(600f, 0f, 0f, 600f, 600f, 600f)
-//            borderPath.set(path)
-
-            val mMatrix = Matrix()
-            val bounds = RectF()
-            path.computeBounds(bounds, true)
-            mMatrix.postRotate(value, bounds.centerX(), bounds.centerY())
-            path.transform(mMatrix)
-
-            invalidate()
-        }
-//        an.start()
-
         an2.duration = 20000
 
         an2.interpolator = LinearInterpolator()
         an2.repeatCount = INFINITE
         an2.addUpdateListener {
-//            h = it.animatedValue as Float
+            path.reset()
+            val ang = it.animatedValue as Float
             val mMatrix = Matrix()
-
             val bounds = RectF()
+            points(path, center, h, w)
             path.computeBounds(bounds, true)
-            mMatrix.postRotate(it.animatedValue as Float, bounds.centerX(), bounds.centerY())
-//            angle = (it.animatedValue as Float).toDouble()
+            mMatrix.postRotate(ang, center.x, center.y)
             path.transform(mMatrix)
             invalidate()
         }
-//        an2.start()
 
     }
 
-    val mMatrix = Matrix()
     var w = 200f
-    var center = PointF((width / 2).toFloat(), 0f)
-    var angle: Double = 0.0
+    var center = PointF((width / 2).toFloat(), (height / 2).toFloat())
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         center = PointF((width / 2).toFloat(), (height / 2).toFloat())
-
+//        an2.start()
     }
 
     override fun onDraw(canvas: Canvas) {
-
         path.reset()
-
+//        points(path, center, h, w)
+        val mMatrix = Matrix()
+        val bounds = RectF()
         points(path, center, h, w)
-
-//        mMatrix.
-//        mMatrix.postRotate(angle.toFloat())
-//        mMatrix.postTranslate((width / 2).toFloat(), (height / 2).toFloat())
-
-//        path.transform(mMatrix)
+        path.computeBounds(bounds, true)
+        mMatrix.postRotate(angle, center.x, center.y)
+        path.transform(mMatrix)
         canvas.drawPath(path, borderPathPaint)
-//        drawCircles(canvas, listOf(startPoint, cPoint1, cPoint2, endPoint))
 
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-
+        val point = PointF(event.x, event.y)
         when {
             event.action == MotionEvent.ACTION_DOWN -> {
-                h = event.y
+                h = dist(center, point).toFloat()
 //                center.x = event.x
-
+                angle = angle(center, point).toFloat()
 
             }
             event.action == MotionEvent.ACTION_MOVE -> {
-                h = event.y
+                h = dist(center, point).toFloat()
+                angle = angle(center, point).toFloat()
+
 //                center.x = event.x
             }
             event.action == MotionEvent.ACTION_UP -> {
 
-                h = 100f
+//                h = 10f
+//                angle = 0f
             }
         }
         invalidate()
@@ -126,25 +97,35 @@ class CurveView @JvmOverloads constructor(
     }
 
     fun angle(center: PointF, point: PointF): Double {
-        return Math.atan2(
+        val angle = Math.atan2(
             (point.y - center.y).toDouble(),
             (point.x - center.x).toDouble()
         ) * 180 / Math.PI;
 
+        return angle + 90
+
     }
 
-    fun points(path: Path, center: PointF, heigt: Float, width: Float = 200f) {
+    fun dist(point1: PointF, point2: PointF): Double {
+        var a = point1.x - point2.x;
+        var b = point1.y - point2.y;
+
+        return Math.sqrt((a * a + b * b).toDouble())
+    }
+
+    fun points(path: Path, center: PointF, h: Float, width: Float = 200f) {
+        val heigt = h
         val startX = center.x - width / 2
         val startY = center.y
         val step = (width) / 4
         // 1
         val startPoint = PointF(startX, startY)
         val cPoint1 = PointF(startX + step, startY)
-        val cPoint2 = PointF(startX + step, heigt)
-        val endPoint = PointF(startX + step * 2, heigt)
+        val cPoint2 = PointF(startX + step, center.y - heigt)
+        val endPoint = PointF(startX + step * 2, center.y - heigt)
 
         //2
-        val cPoint3 = PointF(startX + step * 3, heigt)
+        val cPoint3 = PointF(startX + step * 3, center.y - heigt)
         val cPoint4 = PointF(startX + step * 3, startY)
         val endPoint2 = PointF(startX + step * 4, startY)
 
