@@ -22,12 +22,12 @@ class CurveView @JvmOverloads constructor(
 
     private val borderPathPaint = Paint()
 
-    val an =  ValueAnimator.ofFloat(0f, 360f)
+    val an = ValueAnimator.ofFloat(0f, 360f)
 
     init {
         borderPathPaint.apply {
             isAntiAlias = true
-            strokeWidth = 15f
+            strokeWidth = 5f
             style = Paint.Style.STROKE
             color = Color.RED
         }
@@ -37,7 +37,7 @@ class CurveView @JvmOverloads constructor(
         an.interpolator = LinearInterpolator()
         an.repeatCount = INFINITE
         an.addUpdateListener {
-            val value =it.animatedValue as Float
+            val value = it.animatedValue as Float
 
             path.reset()
             path.cubicTo(600f, 0f, 0f, 600f, 600f, 600f)
@@ -52,14 +52,56 @@ class CurveView @JvmOverloads constructor(
 
             invalidate()
         }
-        an.start()
+//        an.start()
 
     }
 
     override fun onDraw(canvas: Canvas) {
 
-        canvas?.drawPath(path, borderPathPaint)
+        path.reset()
+//        path.cubicTo(600f, 0f, 0f, 600f, 600f, 600f)
+        val startPoint = PointF(10f, 10f)
+        val cPoint1 = PointF(300f, 0f)
+        val cPoint2 = PointF(300f, 600f)
+        val endPoint = PointF(600f, 600f)
+
+        path.moveTo(startPoint.x, startPoint.y)
+        path.cubicTo(
+            cPoint1.x,
+            cPoint1.y,
+
+            cPoint2.x,
+            cPoint2.y,
+
+            endPoint.x,
+            endPoint.y
+        )
+
+        canvas.drawPath(path, borderPathPaint)
+        drawCircles(canvas, listOf(startPoint, cPoint1, cPoint2, endPoint))
 
     }
 
+    fun drawCircles(canvas: Canvas, points: List<PointF>) {
+        val paint = Paint()
+        paint.apply {
+            isAntiAlias = true
+            strokeWidth = 5f
+            style = Paint.Style.STROKE
+            color = Color.BLUE
+        }
+        points.forEach {
+            drawCircle(canvas, it, 10f, paint)
+        }
+    }
+
+    fun drawCircle(canvas: Canvas, point: PointF, radius: Float, paint: Paint) {
+        canvas.drawCircle(
+            point.x,
+            point.y,
+            radius,
+            paint
+        )
+
+    }
 }
