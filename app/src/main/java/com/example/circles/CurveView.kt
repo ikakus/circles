@@ -49,7 +49,7 @@ class CurveView @JvmOverloads constructor(
 
     }
 
-    var w = 200f
+    var w = 400f
     var center = PointF((width / 2).toFloat(), (height / 2).toFloat())
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
@@ -63,13 +63,18 @@ class CurveView @JvmOverloads constructor(
 //        points(path, center, h, w)
         val mMatrix = Matrix()
         val bounds = RectF()
-        points(path, center, h, w)
+        var center2 = PointF((width / 2).toFloat(), (height / 2).toFloat() - 230)
+        points(path, center2, h, w)
         path.computeBounds(bounds, true)
         mMatrix.postRotate(angle, center.x, center.y)
         path.transform(mMatrix)
         canvas.drawPath(path, borderPathPaint)
+        canvas.drawCircle(center.x, center.y, 300f, borderPathPaint)
+        canvas.drawCircle(circlePoint.x, circlePoint.y, 100f, borderPathPaint)
 
     }
+
+    var circlePoint = PointF()
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val point = PointF(event.x, event.y)
@@ -78,11 +83,14 @@ class CurveView @JvmOverloads constructor(
                 h = dist(center, point).toFloat()
 //                center.x = event.x
                 angle = angle(center, point).toFloat()
+                circlePoint  = PointF(event.x, event.y)
 
             }
             event.action == MotionEvent.ACTION_MOVE -> {
                 h = dist(center, point).toFloat()
                 angle = angle(center, point).toFloat()
+                circlePoint  = PointF(event.x, event.y)
+
 
 //                center.x = event.x
             }
@@ -110,7 +118,7 @@ class CurveView @JvmOverloads constructor(
         var a = point1.x - point2.x;
         var b = point1.y - point2.y;
 
-        return Math.sqrt((a * a + b * b).toDouble())
+        return Math.sqrt((a * a + b * b).toDouble()) - 230
     }
 
     fun points(path: Path, center: PointF, h: Float, width: Float = 200f) {
@@ -120,13 +128,13 @@ class CurveView @JvmOverloads constructor(
         val step = (width) / 4
         // 1
         val startPoint = PointF(startX, startY)
-        val cPoint1 = PointF(startX + step, startY)
-        val cPoint2 = PointF(startX + step, center.y - heigt)
+        val cPoint1 = PointF(startX + step*2, startY)
+        val cPoint2 = PointF(startX + step*2, center.y - heigt)
         val endPoint = PointF(startX + step * 2, center.y - heigt)
 
         //2
-        val cPoint3 = PointF(startX + step * 3, center.y - heigt)
-        val cPoint4 = PointF(startX + step * 3, startY)
+        val cPoint3 = PointF(startX + step * 2, center.y - heigt)
+        val cPoint4 = PointF(startX + step * 2, startY)
         val endPoint2 = PointF(startX + step * 4, startY)
 
         path.moveTo(startPoint.x, startPoint.y)
